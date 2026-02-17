@@ -33,7 +33,7 @@ const getcarbyid=async(id)=>{
 
 const updatecar=async(car,id)=>{
     try {
-        let {brand,model,year,registration_no,userid,per_day_price,status}=car;
+        let {brand,model,year,registration_no,userid,per_day_price,status,location}=car;
         let sql="update cars set brand=?,model=?,year=?,registration_no=?,userid=?,per_day_price=?,status=?,location=? where carid=?";
         let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,location,id]);
         return result;
