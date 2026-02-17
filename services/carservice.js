@@ -2,11 +2,11 @@ import pool from '../dbconfig/db.js';
 
 const addcar=async(car)=>{
     try {
-        let {brand,model,year,registration_no,userid,per_day_price,status,carimages}=car;
+        let {brand,model,year,registration_no,userid,per_day_price,status,carimages,location}=car;
         console.log(car);
         
-        let sql="insert into cars(brand,model,year,registration_no,userid,per_day_price,status,carimages) values(?,?,?,?,?,?,?,?)";
-        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,carimages]);
+        let sql="insert into cars(brand,model,year,registration_no,userid,per_day_price,status,carimages,location) values(?,?,?,?,?,?,?,?,?)";
+        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,carimages,location]);
         return result;
     } catch (error) {
         return error
@@ -34,8 +34,8 @@ const getcarbyid=async(id)=>{
 const updatecar=async(car,id)=>{
     try {
         let {brand,model,year,registration_no,userid,per_day_price,status}=car;
-        let sql="update cars set brand=?,model=?,year=?,registration_no=?,userid=?,per_day_price=?,status=? where carid=?";
-        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,id]);
+        let sql="update cars set brand=?,model=?,year=?,registration_no=?,userid=?,per_day_price=?,status=?,location=? where carid=?";
+        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,location,id]);
         return result;
     } catch (error) {
         return error.message;
