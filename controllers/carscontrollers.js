@@ -38,7 +38,8 @@ export const updatecar=async(req,res)=>{
     }
 }
 
-const deleteCar=async(req,res)=>{
+
+export const deleteCar=async(req,res)=>{
     try {
         const id=req.params.id;
         const deletedcar=await carservice.deletecar(id);
@@ -47,4 +48,3 @@ const deleteCar=async(req,res)=>{
         return res.status(500).json({error:error.message});
     }
 }
-export default {addcar,getallcars,getcarbyid,updatecar};
