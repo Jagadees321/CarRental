@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 // import mysql from 'mysql2';
 import Authroute from './routes/Authroute.js';
 import userroute from './routes/userroute.js';
-import pool from './dbconfig/db.js'
+import pool from './dbconfig/db.js';
+import carroute from './routes/carroute.js';
 dotenv.config();
 
 
@@ -30,6 +31,7 @@ app.get('/', (req, res) => {
 //routes
 app.use('/api/auth',Authroute);
 app.use('/api/user',userroute);
+app.use('/api/car',carroute);
 app.listen(port, () => {
     console.log("server started at http://localhost:" + port);
 });
