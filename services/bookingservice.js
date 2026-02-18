@@ -26,7 +26,7 @@ const addbooking=async(booking)=>{
 
 const getbookingbyuserid=async(userid)=>{
     try {
-        let sql="select b.bookingid,b.userid,b.carid,b.pickup_location,b.drop_location,b.start_date,b.end_date,b.status,b.total_amount,c.car_name from booking b join cars c on b.carid=c.carid where b.userid=?";
+        let sql="select b.bookingid,b.userid,b.carid,b.pickup_location,b.drop_location,DATE_FORMAT(b.start_date,'%Y-%m-%d') as start_date,DATE_FORMAT(b.end_date,'%Y-%m-%d') as end_date,b.status,b.total_amount,c.brand,c.model from booking b join cars c on b.carid=c.carid where b.userid=? order by b.createAt desc";
         let [result]=await pool.execute(sql,[userid]);
         return result;
     } catch (error) {
@@ -36,8 +36,59 @@ const getbookingbyuserid=async(userid)=>{
 
 const getbookingbybookingid=async(bookingid)=>{
     try {
-        let sql="select b.bookingid,b.userid,b.carid,b.pickup_location,b.drop_location,b.start_date,b.end_date,b.status,b.total_amount,c.car_name from booking b join cars c on b.carid=c.carid where b.bookingid=?";
+        let sql="select b.bookingid,b.userid,b.carid,b.pickup_location,b.drop_location,DATE_FORMAT(b.start_date,'%Y-%m-%d') as start_date,DATE_FORMAT(b.end_date,'%Y-%m-%d') as end_date,b.status,b.total_amount,c.brand,c.model,c.per_day_price from booking b join cars c on b.carid=c.carid where b.bookingid=?";
         let [result]=await pool.execute(sql,[bookingid]);
+        return result[0] || null;
+    } catch (error) {
+        throw error;
+    }
+}
+
+const getbookingbycarid=async(carid)=>{
+    try {
+        let sql="select b.bookingid,b.userid,b.carid,b.pickup_location,b.drop_location,DATE_FORMAT(b.start_date,'%Y-%m-%d') as start_date,DATE_FORMAT(b.end_date,'%Y-%m-%d') as end_date,b.status,b.total_amount,u.username from booking b join users u on b.userid=u.userid where b.carid=? order by b.start_date desc";
+        let [result]=await pool.execute(sql,[carid]);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
+
+const gettotalamount=async(carid,startdate,enddate)=>{
+    try {
+        let sql="select per_day_price from cars where carid=?";
+        let [result]=await pool.execute(sql,[carid]);
+        const perDayPrice = result[0]?.per_day_price ?? 0;
+        const start=new Date(startdate);
+        const end=new Date(enddate);
+        const diffMs = end - start;
+        const diffDays = diffMs / (24 * 60 * 60 * 1000);
+        const days = Math.ceil(diffDays) + 1;
+        const totalAmount = Number(perDayPrice) * days;
+        return { per_day_price: perDayPrice, totalAmount, days };
+    } catch (error) {
+        throw error;
+    }
+}
+
+const checkcaravailability=async(carid,startdate,enddate)=>{
+    try {
+        const sql=`select bookingid from booking where carid=? and status in ('pending','confirmed','AVAILABLE') and (
+            (start_date <= ? and end_date >= ?) or
+            (start_date <= ? and end_date >= ?) or
+            (start_date >= ? and end_date <= ?)
+        )`;
+        const [rows]=await pool.execute(sql,[carid,startdate,startdate,enddate,enddate,startdate,enddate]);
+        return { available: rows.length === 0 };
+    } catch (error) {
+        throw error;
+    }
+}
+
+const getunavailabledates=async(carid)=>{
+    try {
+        const sql="select DATE_FORMAT(start_date,'%Y-%m-%d') as start_date, DATE_FORMAT(end_date,'%Y-%m-%d') as end_date, status from booking where carid=? and status in ('pending','confirmed','AVAILABLE') and end_date >= CURDATE() order by start_date";
+        const [result]=await pool.execute(sql,[carid]);
         return result;
     } catch (error) {
         throw error;
@@ -55,7 +106,7 @@ const getallbookings=async()=>{
                 DATE_FORMAT(b.createAt, '%Y-%m-%d %H:%i:%s') AS createAt,
                 u.username, u.email, u.phonenumber, u.adhaarNo, u.drivinglic,
                 DATE_FORMAT(u.createdAt, '%Y-%m-%d %H:%i:%s') AS createdAt, u.role,
-                c.brand, c.model, c.year, c.registration_no, c.per_day_price, c.carimages, c.location
+                c.brand, c.model, c.year, c.registration_no, c.per_day_price
             FROM booking b
             INNER JOIN users u ON b.userid = u.userid
             INNER JOIN cars c ON b.carid = c.carid
@@ -77,4 +128,4 @@ const updatebookingstatus=async(bookingid,status)=>{
     }
 }
 
-export default {addbooking,getbookingbyuserid,getbookingbybookingid,getallbookings,updatebookingstatus};
+export default {addbooking,getbookingbyuserid,getbookingbybookingid,getbookingbycarid,gettotalamount,checkcaravailability,getunavailabledates,getallbookings,updatebookingstatus};

@@ -40,10 +40,52 @@ export const getbookingbybookingid=async(req,res)=>{
 
 export const updatebookingstatus=async(req,res)=>{
     try {
-        let {bookingid,status}=req.body;            
+        let {bookingid,status}=req.body;
         let result=await bookingservice.updatebookingstatus(bookingid,status);
         return res.status(200).json({message:"booking status updated successfully",result});
-    }catch(error){
+    } catch (error) {
+        return res.status(500).json({error:error.message});
+    }
+}
+
+export const getbookingbycarid=async(req,res)=>{
+    try {
+        const carid=req.params.carid;
+        const result=await bookingservice.getbookingbycarid(carid);
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({error:error.message});
+    }
+}
+
+export const gettotalamount=async(req,res)=>{
+    try {
+        const {carid,startdate,enddate}=req.body;
+        const result=await bookingservice.gettotalamount(carid,startdate,enddate);
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({error:error.message});
+    }
+}
+
+export const checkcaravailability=async(req,res)=>{
+    try {
+        const carid=req.params.carid;
+        const {startdate,enddate}=req.query;
+        if (!startdate || !enddate) return res.status(400).json({error:'startdate and enddate query params required'});
+        const result=await bookingservice.checkcaravailability(carid,startdate,enddate);
+        return res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({error:error.message});
+    }
+}
+
+export const getunavailabledates=async(req,res)=>{
+    try {
+        const carid=req.params.carid;
+        const result=await bookingservice.getunavailabledates(carid);
+        return res.status(200).json(result);
+    } catch (error) {
         return res.status(500).json({error:error.message});
     }
 }

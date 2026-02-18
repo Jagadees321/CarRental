@@ -1,26 +1,35 @@
 import pool from '../dbconfig/db.js';
 
-const addcar=async(car)=>{
+const addcar = async (car) => {
     try {
-        let {brand,model,year,registration_no,userid,per_day_price,status,carimages,location}=car;
-        console.log(car);
-        
-        let sql="insert into cars(brand,model,year,registration_no,userid,per_day_price,status,carimages,location) values(?,?,?,?,?,?,?,?,?)";
-        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,carimages,location]);
+        const { brand, model, year, registration_no, userid, per_day_price, status } = car;
+        const sql = "insert into cars(brand,model,year,registration_no,userid,per_day_price,status) values(?,?,?,?,?,?,?)";
+        const [result] = await pool.execute(sql, [brand, model, year, registration_no, userid, per_day_price, status || 'AVAILABLE']);
         return result;
     } catch (error) {
-        return error
+        throw error;
     }
-}
-const getcars=async()=>{
+};
+
+const getcars = async () => {
     try {
-        let sql="select * from cars";
-        let [result]=await pool.execute(sql);
+        const sql = "select carid,brand,model,year,registration_no,userid,per_day_price,status,DATE_FORMAT(createAt,'%Y-%m-%d %H:%i:%s') as createAt from cars order by createAt desc";
+        const [result] = await pool.execute(sql);
         return result;
     } catch (error) {
-        return error
+        throw error;
     }
-}
+};
+
+const getcarsbyowner = async (userid) => {
+    try {
+        const sql = "select carid,brand,model,year,registration_no,userid,per_day_price,status,DATE_FORMAT(createAt,'%Y-%m-%d %H:%i:%s') as createAt from cars where userid=? order by createAt desc";
+        const [result] = await pool.execute(sql, [userid]);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
 const getcarbyid=async(id)=>{
     try {
         let sql="select * from cars where carid=?"
@@ -31,16 +40,16 @@ const getcarbyid=async(id)=>{
     }
 }
 
-const updatecar=async(car,id)=>{
+const updatecar = async (car, id) => {
     try {
-        let {brand,model,year,registration_no,userid,per_day_price,status,location}=car;
-        let sql="update cars set brand=?,model=?,year=?,registration_no=?,userid=?,per_day_price=?,status=?,location=? where carid=?";
-        let [result]=await pool.execute(sql,[brand,model,year,registration_no,userid,per_day_price,status,location,id]);
+        const { brand, model, year, registration_no, userid, per_day_price, status } = car;
+        const sql = "update cars set brand=?,model=?,year=?,registration_no=?,userid=?,per_day_price=?,status=? where carid=?";
+        const [result] = await pool.execute(sql, [brand, model, year, registration_no, userid, per_day_price, status || 'AVAILABLE', id]);
         return result;
     } catch (error) {
-        return error.message;
+        throw error;
     }
-}
+};
 
 const deletecar=async(id)=>{
     try {
@@ -52,4 +61,4 @@ const deletecar=async(id)=>{
     }
 }
 
-export default {addcar,getcars,getcarbyid,updatecar,deletecar};
+export default { addcar, getcars, getcarsbyowner, getcarbyid, updatecar, deletecar };

@@ -19,7 +19,7 @@ export const login=async(req,res)=>{
         
         const result=await Authservice.login(email,password);
 
-        res.status(result.status).json(result.message);
+        res.status(result.status).json(result.user ? { message: result.message, user: result.user } : { message: result.message });
     } catch (error) {
         res.status(500).json(error);
     }   
